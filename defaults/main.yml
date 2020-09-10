@@ -1,0 +1,4 @@
+---
+systemd_releases:
+  - "bionic"
+  - "focal"

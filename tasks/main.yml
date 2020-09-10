@@ -1,0 +1,100 @@
+---
+- name: Populate service facts
+  service_facts:
+
+- name: define systemd-networkd and systemd-resolved status
+  set_fact:
+    systemd_networking: "{{ ansible_facts.services['systemd-networkd.service'].state == 'running' \
+                        and ansible_facts.services['systemd-resolved.service'].state == 'running' }}"
+
+- name: install dnsmasq
+  apt:
+    name: dnsmasq
+
+- name: never forward plain names
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    regexp: 'domain-needed'
+    line: domain-needed
+  notify: restart dnsmasq
+
+- name: never forward addresses in the non-routed address spaces
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    regexp: 'bogus-priv'
+    line: bogus-priv
+  notify: restart dnsmasq
+
+- name: include conf files in /etc/dnsmasq.d
+  lineinfile:
+    path: /etc/dnsmasq.conf
+    regexp: 'conf-dir=/etc/dnsmasq\.d$'
+    line: conf-dir=/etc/dnsmasq.d
+  notify: restart dnsmasq
+
+- name: install resolvconf
+  apt:
+    name: resolvconf
+  when: not systemd_networking
+
+- block:
+  - name: install jq
+    apt:
+      name: jq
+
+  - name: configure systemd-resolved for use with dnsmasq
+    lineinfile:
+      path: /etc/systemd/resolved.conf
+      regexp: '^DNSStubListener='
+      line: DNSStubListener=no
+    register: systemd_resolved_configuration
+
+  - name: restart systemd-resolved
+    service:
+      name: systemd-resolved
+      state: restarted
+    when: systemd_resolved_configuration.changed
+
+  - name: get resolv.conf file status
+    stat:
+      path: /etc/resolv.conf
+    register: resolv_conf_file
+
+  - name: remove resolv.conf file
+    file:
+      path: /etc/resolv.conf
+      state: absent
+    when: resolv_conf_file.stat.islnk
+
+  - name: configure resolv.conf
+    copy:
+      src: resolv.conf
+      dest: /etc/resolv.conf
+      owner: root
+      group: root
+      mode: "0644"
+    when: resolv_conf_file.stat.islnk
+  when: systemd_networking | bool
+
+- name: copy update_dns_config script
+  template:
+    src: update_dns_config
+    dest: /usr/local/bin/update_dns_config
+    owner: "{{ ansible_user }}"
+    mode: "0744"
+  notify: update dns ip
+
+- name: copy update_dns_config_hook script
+  template:
+    src: update_dns_config_hook
+    dest: "{{ hooks_location }}/update_dns_config_hook"
+    mode: "0744"
+  notify: update dns ip
+
+- name: copy update_dns_ip script
+  template:
+    src: update_dns_ip
+    dest: /usr/local/bin/update_dns_ip
+    owner: "{{ ansible_user }}"
+    mode: "0744"
+  notify: update dns ip

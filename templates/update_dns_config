@@ -1,0 +1,27 @@
+# update dnsmasq configuration
+update_dns_masq() {
+  echo "address=/{{ hostname }}/$1" > /etc/dnsmasq.d/{{ hostname }}
+  systemctl restart dnsmasq
+}
+
+{% if systemd_networking %}
+update_domain_name_servers() {
+  servers=$(grep nameserver /run/systemd/resolve/resolv.conf | sed 's/nameserver //')
+  echo "nameserver 127.0.0.1" > /etc/resolv.conf
+  echo "nameserver $new_ip_address" >> /etc/resolv.conf
+  for serv in $servers; do
+    echo "nameserver $serv" >> /etc/resolv.conf
+  done
+}
+{% else %}
+# resolveconf adds the nameserver in "tail" to /etc/resolv.conf, needed for docker containers
+update_domain_name_servers () {
+  echo "nameserver $new_ip_address" > /etc/resolvconf/resolv.conf.d/tail
+  resolvconf -u
+}
+{% endif %}
+
+if [ $interface = $reference_interface ]; then
+  update_dns_masq $new_ip_address
+  update_domain_name_servers
+fi

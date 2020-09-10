@@ -1,0 +1,26 @@
+#!/bin/bash
+# Set the default interface, update the dnsmasq configuration and set the
+# nameservers in the resolv.conf file
+default_interface={{ default_interface }}
+
+{% if systemd_networking %}
+if [ $AdministrativeState == "configured" ]; then
+  {% if ansible_distribution_release == "bionic" %}
+  ip_address=$ADRR
+  {% else %}
+  ip_address=$(echo $json | jq '.A[0]' | grep -Po '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+  {% endif %}
+  interface=$IFACE \
+  new_ip_address=$ip_address \
+  reference_interface=$default_interface \
+  update_dns_config
+fi
+{% else %}
+case "$reason" in
+  BOUND|RENEW|REBIND|REBOOT)
+    interface=$interface \
+    new_ip_address=$new_ip_address \
+    reference_interface=$default_interface \
+    update_dns_config
+esac
+{% endif %}

@@ -1,0 +1,5 @@
+---
+dhclient_hooks: /etc/dhcp/dhclient-enter-hooks.d
+systemd_hooks: /usr/lib/networkd-dispatcher/routable.d
+hooks_location: "{{ systemd_networking | ternary(systemd_hooks, dhclient_hooks) }}"
+update_dns_config_hook: "{{ hooks_location }}/update_dns_config_hook"

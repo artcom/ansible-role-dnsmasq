@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# provide optional network interface (e.g. enp0s3 or enp0s8) to decide which interface IP should be used
+
+set -e
+
+IP=$(ip addr show ${1:-{{ default_interface }}} | awk '/inet / {print substr($2, 1)}' | sed 's/\/24//')
+
+echo "Setting DNS to $IP and default interface to ${1:-{{ default_interface }}}"
+
+# set default interface in DHCP hook
+sed -i "s/\(default_interface=\).*/\1${1:-{{ default_interface }}}/g" {{ update_dns_config_hook }}
+
+{% if not systemd_networking %}
+reason=RENEW \
+{% endif %}
+reference_interface=${1:-{{ default_interface }}} \
+interface=${1:-{{ default_interface }}} \
+new_ip_address=$IP \
+/bin/bash update_dns_config

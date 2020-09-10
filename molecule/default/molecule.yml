@@ -1,0 +1,38 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+
+platforms:
+  - name: xenial
+    box: bento/ubuntu-16.04
+  - name: bionic
+    box: bento/ubuntu-18.04
+  - name: focal
+    box: bento/ubuntu-20.04
+  - name: buster
+    box: bento/debian-10.5
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      xenial:
+        hostname: xenial.domain.org
+        default_interface: eth0
+      bionic:
+        hostname: bionic.domain.org
+        default_interface: eth0
+      focal:
+        hostname: focal.domain.org
+        default_interface: eth0
+      buster:
+        hostname: buster.domain.org
+        default_interface: eth0
+verifier:
+  name: testinfra
+lint: |
+  set -e
+  yamllint .
+  ansible-lint
+  flake8

@@ -1,5 +1,5 @@
 ---
-mandatory_vars:
+required_vars:
   hostname: "{{ hostname }}"
   default_interface: "{{ default_interface }}"
 dhclient_hooks: /etc/dhcp/dhclient-enter-hooks.d

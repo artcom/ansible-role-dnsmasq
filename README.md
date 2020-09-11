@@ -10,7 +10,7 @@ Available variables are listed below, along with default values `(see defaults/m
 hostname: null
 default_interface: null
 ```
-Mandatory variables (role will fail if the variables are not set):
+Required variables (role will fail if the variables are not set):
 ```yaml
 hostname: "string"
 default_interface: "string"

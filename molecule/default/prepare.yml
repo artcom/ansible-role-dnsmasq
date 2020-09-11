@@ -1,0 +1,10 @@
+- name: Prepare
+  hosts: all
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: install dnsutils
+      apt:
+        name: dnsutils
+        cache_valid_time: 3600

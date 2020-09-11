@@ -1,4 +1,7 @@
 ---
+mandatory_vars:
+  hostname: "{{ hostname }}"
+  default_interface: "{{ default_interface }}"
 dhclient_hooks: /etc/dhcp/dhclient-enter-hooks.d
 systemd_hooks: /usr/lib/networkd-dispatcher/routable.d
 hooks_location: "{{ systemd_networking | ternary(systemd_hooks, dhclient_hooks) }}"

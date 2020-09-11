@@ -1,5 +1,5 @@
 # DNSMASQ
-Ansible role to set up dnsmasq to resolve a domain name and its sub-domains to the `ansible_host`.
+Ansible role to set up dnsmasq to resolve a domain name and its sub-domains to the `ansible_host` IP.
 
 ## Requirements
 None.
@@ -7,11 +7,13 @@ None.
 ## Role Variables
 Available variables are listed below, along with default values `(see defaults/main.yml)`:
 ```yaml
-
+hostname: null
+default_interface: null
 ```
 Mandatory variables (role will fail if the variables are not set):
 ```yaml
-
+hostname: "string"
+default_interface: "string"
 ```
 
 ## Dependencies

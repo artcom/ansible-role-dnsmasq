@@ -1,4 +1,12 @@
 ---
+- name: check mandatory variables
+  fail:
+    msg: 'variable {{ mandatory_var.key }} not defined'
+  when: not mandatory_var.value
+  loop: "{{ mandatory_vars | dict2items }}"
+  loop_control:
+    loop_var: mandatory_var
+
 - name: Populate service facts
   service_facts:
 

@@ -17,7 +17,7 @@ default_interface: "string"
 ```
 
 ## Dependencies
-None.
+* [check-required-variables](https://github.com/artcom/ansible-role-check-required-variables)
 
 # Example Playbook
 ```yaml
